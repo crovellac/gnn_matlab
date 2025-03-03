@@ -17,10 +17,20 @@ function out = model(parameters,features,edges,numNodes)
     %ReLu and Normalize
     x2 = relu(x2);
     x2 = normalize(x2, 2, 'norm');
-    %Pooling 1
+    %Pooling 2
     x2_readout = graphAveragePool(x2,numNodes);
 
-    x_readout = x1_readout+x2_readout;
+    %GraphSAGE Layer 3
+    x3 = edges*x2*parameters.layer3.lin_l_weight;
+    x3 = x3 + x2*parameters.layer3.lin_r_weight;
+    x3 = x3 + parameters.layer3.lin_l_bias;
+    %ReLu and Normalize
+    x3 = relu(x3);
+    x3 = normalize(x3, 2, 'norm');
+    %Pooling 3
+    x3_readout = graphAveragePool(x3,numNodes);
+
+    x_readout = x1_readout+x2_readout+x3_readout;
     
     %Classification
     out = parameters.classifier.weights*x_readout';
